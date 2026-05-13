@@ -1,0 +1,72 @@
+{
+  "workflow_name": "GastroOps AI - Lead Intake",
+  "goal": "Принять заявку с сайта, сохранить лид в Google Sheets и мгновенно отправить уведомление в Telegram.",
+  "webhook": {
+    "method": "POST",
+    "path": "gastroops/lead-intake",
+    "url": "https://n8n.n8ndo.es/webhook/gastroops/lead-intake"
+  },
+  "required_credentials": [
+    "Google Sheets OAuth2",
+    "Telegram Bot"
+  ],
+  "input_fields": [
+    "name",
+    "restaurant_name",
+    "city",
+    "language",
+    "email",
+    "phone",
+    "website",
+    "menu_url",
+    "requested_service",
+    "pain",
+    "source",
+    "owner"
+  ],
+  "generated_fields": {
+    "lead_id": "lead-{{$now.toFormat(\"yyyyLLdd-HHmmss\")}}",
+    "created_at": "{{$now.toISO()}}",
+    "status": "new",
+    "next_action": "first_response"
+  },
+  "google_sheets": {
+    "spreadsheet_name": "GastroOps AI CRM",
+    "sheet_name": "Leads",
+    "append_columns": [
+      "lead_id",
+      "created_at",
+      "source",
+      "name",
+      "restaurant_name",
+      "city",
+      "language",
+      "email",
+      "phone",
+      "website",
+      "menu_url",
+      "requested_service",
+      "pain",
+      "status",
+      "next_action",
+      "owner"
+    ]
+  },
+  "telegram_message_template": "Новый лид GastroOps AI\n\nИмя: {{$json.name}}\nПроект: {{$json.restaurant_name}}\nГород: {{$json.city}}\nЯзык: {{$json.language}}\nУслуга: {{$json.requested_service}}\nEmail: {{$json.email}}\nТелефон: {{$json.phone}}\nСайт: {{$json.website}}\nМеню: {{$json.menu_url}}\n\nЗадача:\n{{$json.pain}}",
+  "response_to_user": {
+    "status": "ok",
+    "message": "Спасибо. Заявка принята, мы свяжемся с вами после первичного разбора."
+  },
+  "node_order": [
+    "Webhook",
+    "Нормализация лида",
+    "Google Sheets: Append Lead",
+    "Telegram: Notify",
+    "Respond to Webhook"
+  ],
+  "business_rules": [
+    "Не отправлять клиенту автоматические коммерческие предложения.",
+    "Не запускать длинную AI-генерацию в intake workflow.",
+    "Не изменять статусы лида автоматически после создания, кроме начального статуса new."
+  ]
+}

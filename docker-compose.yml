@@ -1,0 +1,32 @@
+services:
+  caddy:
+    image: caddy:2.10-alpine
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./infra/Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    depends_on:
+      - site
+      - n8n
+
+  site:
+    image: nginx:1.29-alpine
+    restart: unless-stopped
+    volumes:
+      - ./site/public:/usr/share/nginx/html:ro
+
+  n8n:
+    image: n8nio/n8n:1.95.3
+    restart: unless-stopped
+    env_file:
+      - .env
+    volumes:
+      - ./n8n_data:/home/node/.n8n
+
+volumes:
+  caddy_data:
+  caddy_config:

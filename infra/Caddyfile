@@ -1,0 +1,13 @@
+{
+	email admin@example.com
+}
+
+{$SITE_HOST} {
+	root * /usr/share/caddy
+	file_server
+	reverse_proxy site:80
+}
+
+{$N8N_HOST} {
+	reverse_proxy n8n:5678
+}
